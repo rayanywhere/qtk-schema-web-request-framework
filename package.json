@@ -1,0 +1,21 @@
+{
+    "name": "@qtk/schema-web-request-framework",
+    "version": "1.0.0",
+    "description": "schema-web-request-framework",
+    "main": "build.js",
+    "scripts": {},
+    "keywords": [],
+    "author": "magnus&skip",
+    "license": "",
+    "dependencies": {
+        "ajv": "^5.5.1",
+        "ajv-keywords": "^2.1.1",
+        "body-parser": "^1.18.2",
+        "content-type": "^1.0.4",
+        "cors": "^2.8.4",
+        "express": "^4.16.2",
+        "fs": "0.0.1-security",
+        "iconv-lite": "^0.4.19",
+        "request": "^2.83.0"
+    }
+}
