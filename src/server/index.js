@@ -6,38 +6,17 @@ const EventEmitter = require('events').EventEmitter;
 
 module.exports = class extends EventEmitter {
 
-    constructor({host, port, handlerDir, schemaDir, corsCallback}, middlewares = []) {
+    constructor({host, port, handlerDir, schemaDir}, middlewares = []) {
         super();
         this._host = host;
         this._port = port;
         this._handlerDir = handlerDir;
         this._schemaDir = schemaDir;
-        this._corsCallback = corsCallback;
         this._app = new Express();
         this._init(middlewares);
     }
 
     _init(middlewares = []) {
-        //handle cors
-        this._app.use((req, res, next) => {
-            if (this._corsCallback !== undefined && this._corsCallback(req) === true) {
-                res.header("Access-Control-Allow-Origin", '*');
-                res.header('Access-Control-Allow-Methods', 'PUT, GET, POST, DELETE, OPTIONS');
-                res.header("Access-Control-Allow-Headers", "X-Requested-With");
-                res.header('Access-Control-Allow-Headers', 'Content-Type');
-                if (req.method === 'OPTIONS') {
-                    res.sendStatus(204);
-                    return;
-                }
-            }
-            else if (req.method === 'OPTIONS') {
-                res.sendStatus(403);
-                return;
-            }
-
-            next();
-        });
-
         this._app.use((req, res, next) => {
             let chunks = [];
             req.on('data', (chunk) => { 

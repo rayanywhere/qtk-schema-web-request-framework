@@ -10,16 +10,12 @@ let demoMiddleware = {
     }
 };
 
-const corsCallback = (req) => {
-    return true;
-};
 
 let server = new Server({
     host: "127.0.0.1",
     port: 3005,
     handlerDir: `${__dirname}/common/handler`,
     schemaDir: `${__dirname}/common/schema`,
-    corsCallback
 }, [demoMiddleware]);
 
 server.on("error", (err) => {
