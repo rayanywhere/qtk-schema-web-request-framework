@@ -1,26 +1,43 @@
 const Express = require('express');
 const iconv = require('iconv-lite');
 const ContentType = require('content-type');
-const cors = require('cors');
-const bodyParser = require('body-parser');
 const schemaValidater = require('../common/schema_validater.js');
 const EventEmitter = require('events').EventEmitter;
 
 module.exports = class extends EventEmitter {
 
-    constructor({host, port, handlerDir, schemaDir}, middlewares = []) {
+    constructor({host, port, handlerDir, schemaDir, corsCallback}, middlewares = []) {
         super();
         this._host = host;
         this._port = port;
         this._handlerDir = handlerDir;
         this._schemaDir = schemaDir;
+        this._corsCallback = corsCallback;
         this._app = new Express();
         this._init(middlewares);
     }
 
     _init(middlewares = []) {
-        const schema = this._schema;
-        this._app.use(cors());
+        //handle cors
+        this._app.use((req, res, next) => {
+            if (this._corsCallback !== undefined && this._corsCallback(req) === true) {
+                res.header("Access-Control-Allow-Origin", '*');
+                res.header('Access-Control-Allow-Methods', 'PUT, GET, POST, DELETE, OPTIONS');
+                res.header("Access-Control-Allow-Headers", "X-Requested-With");
+                res.header('Access-Control-Allow-Headers', 'Content-Type');
+                if (req.method === 'OPTIONS') {
+                    res.sendStatus(204);
+                    return;
+                }
+            }
+            else if (req.method === 'OPTIONS') {
+                res.sendStatus(403);
+                return;
+            }
+
+            next();
+        });
+
         this._app.use((req, res, next) => {
             let chunks = [];
             req.on('data', (chunk) => { 
@@ -67,7 +84,7 @@ module.exports = class extends EventEmitter {
                         name: apiName,
                         schema: interfaceSchema,
                         payload: {
-                            state: req.get('Web-State') == undefined ? {} : req.get('Qweb-State').split('&').reduce((state, item) => {
+                            state: req.get('Web-State') == undefined ? {} : req.get('Web-State').split('&').reduce((state, item) => {
                                 let [key, value] = item.split('='); 
                                 if (value != undefined) {
                                     state[key] = value;

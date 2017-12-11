@@ -10,24 +10,30 @@ let demoMiddleware = {
     }
 };
 
+const corsCallback = (req) => {
+    return true;
+};
+
 let server = new Server({
     host: "127.0.0.1",
     port: 3005,
     handlerDir: `${__dirname}/common/handler`,
-    schemaDir: `${__dirname}/common/schema`
+    schemaDir: `${__dirname}/common/schema`,
+    corsCallback
 }, [demoMiddleware]);
 
 server.on("error", (err) => {
-    // console.log(err.stack);
+    console.log(err.stack);
 });
 server.on("started", () => {
     console.log("server start....");
 });
 
 server.start();
-
+/*
 const samplePath = `${__dirname}/sample`;
 let cases = fs.readdirSync(samplePath).filter(file => fs.lstatSync(path.join(samplePath, file)).isDirectory());
 cases.forEach((c) => {
     require(`${samplePath}/${c}`);
 });
+*/
