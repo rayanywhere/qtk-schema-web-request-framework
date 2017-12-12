@@ -26,10 +26,8 @@ server.on("started", () => {
 });
 
 server.start();
-/*
 const samplePath = `${__dirname}/sample`;
 let cases = fs.readdirSync(samplePath).filter(file => fs.lstatSync(path.join(samplePath, file)).isDirectory());
 cases.forEach((c) => {
     require(`${samplePath}/${c}`);
 });
-*/
