@@ -63,7 +63,7 @@ module.exports = class extends EventEmitter {
                         name: apiName,
                         schema: interfaceSchema,
                         payload: {
-                            state: req.get('Web-State') == undefined ? {} : req.get('Web-State').split('&').reduce((state, item) => {
+                            state: req.get('Web-State') == undefined ? {} : req.get('Web-State').split(';').reduce((state, item) => {
                                 let [key, value] = item.split('='); 
                                 if (value != undefined) {
                                     state[key] = value;
