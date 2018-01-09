@@ -58,6 +58,7 @@ module.exports = class extends EventEmitter {
 
                 apiSchema.requestValidator.validate(payload.request);
                 let outgoing = await require(`${handlerDir}/${apiName}`)(payload);
+                if(outgoing === undefined) outgoing = null;
                 apiSchema.responseValidator.validate(outgoing);
                 res.json({response: outgoing});
             }
