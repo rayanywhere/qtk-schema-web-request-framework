@@ -6,13 +6,19 @@ const EventEmitter = require('events').EventEmitter;
 
 module.exports = class extends EventEmitter {
 
-    constructor({host, port, handlerDir, schemaDir}, middlewares = []) {
+    constructor({host, 
+        port, 
+        handlerDir, 
+        schemaDir, 
+        middlewares = [], 
+        route = i => i
+    }) {
         super();
         this._host = host;
         this._port = port;
         this._app = new Express();
         this._app.use(JsonBodyParser);
-        this._app.post('/*', this._executor(handlerDir, schemaDir, middlewares));
+        this._app.post('/*', this._executor(handlerDir, schemaDir, middlewares, route));
         this._app.use((err, req, res, next) => {
             if(err) {
                 this.emit('error', err);
@@ -27,13 +33,12 @@ module.exports = class extends EventEmitter {
         return httpServer;
     }
 
-    _executor(handlerDir, schemaDir, middlewares) {
+    _executor(handlerDir, schemaDir, middlewares, route) {
         let schemaResolver = new SchemaResolver(schemaDir);
         return async (req, res, next) => {
             try {
-                let apiName = req.originalUrl.replace(/^\//, '');
+                let apiName = route(req.originalUrl.replace(/^\//, ''));
                 let apiSchema = schemaResolver.resolve(apiName);
-
                 let payload = {
                     state: StateParser(req),
                     constant: apiSchema.constant,
