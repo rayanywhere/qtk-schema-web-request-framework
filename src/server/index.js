@@ -1,7 +1,7 @@
 const Express = require('express');
-const iconv = require('iconv-lite');
-const ContentType = require('content-type');
-const schemaValidater = require('../common/schema_validater.js');
+const SchemaResolver = require('../common/schema_resolver');
+const JsonBodyParser = require('./json_body_parser');
+const StateParser = require('./state_parser');
 const EventEmitter = require('events').EventEmitter;
 
 module.exports = class extends EventEmitter {
@@ -10,100 +10,56 @@ module.exports = class extends EventEmitter {
         super();
         this._host = host;
         this._port = port;
-        this._handlerDir = handlerDir;
-        this._schemaDir = schemaDir;
         this._app = new Express();
-        this._init(middlewares);
+        this._app.use(JsonBodyParser);
+        this._app.post('/*', this._executor(handlerDir, schemaDir, middlewares));
+        this._app.use((err, req, res, next) => {
+            if(err) {
+                this.emit('error', err);
+                res.sendStatus(500);
+            }
+        });
+    }
+    
+    start() {
+        let httpServer = this._app.listen(this._port, this._host);
+        this.emit("started");
+        return httpServer;
     }
 
-    _init(middlewares = []) {
-        this._app.use((req, res, next) => {
-            let chunks = [];
-            req.on('data', (chunk) => { 
-                chunks.push(chunk);
-            });
-            req.on('end', () => {
-                try {
-                    let contentType = ContentType.parse(req.headers['content-type']);
-                    let charset = contentType.parameters.charset ? contentType.parameters.charset : 'UTF-8';
-                    let body = iconv.decode(Buffer.concat(chunks), charset);
-                    req.body = JSON.parse(body);
-                    next();
-                }
-                catch(err) {
-                    this.emit("error", err);
-                    next('Internal Server Error');
-                }
-            });
-        });
-
-        this._app.post('/*', async (req, res) => {
-            let response = {
-                end : (outgoing = undefined, status = 0) => {
-                    if (status == 0) {
-                        res.json(outgoing);
-                    }
-                    else {
-                        res.sendStatus(500);
-                    }
-                }
-            }
-
-            let apiName = req.originalUrl.replace(/^\//, '');
+    _executor(handlerDir, schemaDir, middlewares) {
+        let schemaResolver = new SchemaResolver(schemaDir);
+        return async (req, res, next) => {
             try {
-                let interfaceSchema,isValid,errMsg;
-                [interfaceSchema, errMsg] = schemaValidater.resolve(this._schemaDir, apiName);
-                if (interfaceSchema == undefined) {
-                    throw new Error(errMsg);
-                }
-                
-                //数据包装
-                let request = {
-                    api : {
-                        name: apiName,
-                        schema: interfaceSchema,
-                        payload: {
-                            state: req.get('Web-State') == undefined ? {} : req.get('Web-State').split(';').reduce((state, item) => {
-                                let [key, value] = item.split('='); 
-                                if (value != undefined) {
-                                    state[key] = value;
-                                }
-                                return state;
-                            }, {}),
-                            constant: interfaceSchema.constant,
-                            request: req.body.request
-                        }
-                    }
-                }
+                let apiName = req.originalUrl.replace(/^\//, '');
+                let apiSchema = schemaResolver.resolve(apiName);
 
-                //中间件处理
+                let payload = {
+                    state: StateParser(req),
+                    constant: apiSchema.constant,
+                    request: req.body.request
+                };
+
                 for (let middleware of middlewares) {
                     let regex = new RegExp(middleware.pattern);
-                    if (regex.test(request.api.name)) {
-                        await middleware.handle(request);
+                    if (regex.test(apiName)) {
+                        await middleware.handle({
+                            name: apiName,
+                            schema: apiSchema,
+                            payload: payload
+                        });
                     }
                 }
 
-                //控制器层处理
-                [isValid, errMsg] = schemaValidater.validate('request', request.api.payload.request, request.api.schema);
-                if (!isValid) { throw new Error(errMsg); }
-
-                let outgoing = await require(`${this._handlerDir}/${request.api.name}`)(request.api.payload);
-
-                [isValid, errMsg] = schemaValidater.validate('response', outgoing, request.api.schema);
-                if (!isValid) { throw new Error(errMsg); }
-
-                response.end({response: outgoing});
+                apiSchema.requestValidator.validate(payload.request);
+                let outgoing = await require(`${handlerDir}/${apiName}`)(payload);
+                apiSchema.responseValidator.validate(outgoing);
+                res.json({response: outgoing});
             }
             catch(err) {
-                this.emit("error", err);
-                response.end(undefined, -1);
+                next(err);
             }
-        });
+        }
     }
 
-    start() {
-        this._app.listen(this._port, this._host);
-        this.emit("started");
-    }
 }

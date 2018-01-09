@@ -1,33 +1,23 @@
-const Server = require('../src/server');
-const fs = require('fs');
-const path = require('path');
-global.assert = require('assert');
+require('./server');
+const client = require('./client');
+const assert = require('assert');
 
-let demoMiddleware = {
-    pattern: '(.*)', //match all interface
-    handle: async (req) => {
-        //you can get schema info by "req.api.schema", get/add some request field to "req.api.payload",also you can throw a error here,the framework will response error to client
-    }
-};
+describe("#request", function() {
+    it('should return hi', async function () {
+        let response = await client.call("test", "hi");
+        assert(response.requestField === 'hi', 'incorrect response');
+    });
 
+    it('should return 500', async function () {
+        await client.call("error.test", "hi").catch(err => {
+            assert (err.message == "server returned error as 500", 'incorrect response');
+        });
+    });
 
-let server = new Server({
-    host: "127.0.0.1",
-    port: 3005,
-    handlerDir: `${__dirname}/common/handler`,
-    schemaDir: `${__dirname}/common/schema`,
-}, [demoMiddleware]);
-
-server.on("error", (err) => {
-    console.log(err.stack);
-});
-server.on("started", () => {
-    console.log("server start....");
-});
-
-server.start();
-const samplePath = `${__dirname}/sample`;
-let cases = fs.readdirSync(samplePath).filter(file => fs.lstatSync(path.join(samplePath, file)).isDirectory());
-cases.forEach((c) => {
-    require(`${samplePath}/${c}`);
+    it('should return request timeout', async function () {
+        //server will sleep 100ms before response
+        await client.call("test", "hi", 50).catch(err => {
+            assert (err.message == "ESOCKETTIMEDOUT", 'incorrect response');
+        });
+    });
 });

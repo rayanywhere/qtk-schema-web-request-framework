@@ -2,11 +2,11 @@ const Request = require("request");
 let sessionStorage = require('./lib/session_storage_emulator.js');
 
 module.exports = class  Transport {
-    constructor({protocol, host, port, root}) {
+    constructor({protocol, host, port, path}) {
         this._protocol = protocol;
         this._host = host;
         this._port = port;
-        this._root = root;
+        this._path = path;
     }
 
     run(interfaceName, request, timeout) { 
@@ -68,7 +68,7 @@ module.exports = class  Transport {
             let states = sessionStorage.getItem('Web-State');
             Request({
                 method: 'post',
-                url: `${this._protocol}://${this._host}:${this._port}${this._root}${name}`,
+                url: `${this._protocol}://${this._host}:${this._port}${this._path}${name}`,
                 json: {request},
                 timeout: timeout,
                 headers : {
