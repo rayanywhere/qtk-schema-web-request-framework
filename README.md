@@ -4,7 +4,7 @@
 
 # Convention
 
-1. An `api` is... emmmm... well, you know, an api. It is described in this pattern: `model.sub_model.verb`, such as `school.grade.class.student.get`. It is just like a flated restful api. We consider this a more separate way to deal with different logic rather than a restful one. And also, more extensible.
+1. An `api` is... emmmm... well, you know, an api. It is described in this pattern: `model.sub_model.verb`, such as `school.grade.class.student.get`. It is just like a flated restful api. We consider this a more separate way to deal with different logic rather than a restful one. Also, more extensible.
 
 2. An api will be mapped to ONE `schema` and ONE `handler`. The schema is used to describe the api, and the handler is to handle and deal with the request.
 
@@ -15,21 +15,21 @@
 
 4. A handler is a module that exports an **async** function, while arguments of the function is the request content, and the return of it will be treated as the response.
 
-5. Both the schema and the handler would be loaded from the file with the same name as the api from their own belonging folder. For example:
+5. Both of the schema and the handler would be loaded from the file with the same name as the api from their own belonging folder. For example:
     ```js
     //api name: school.grade.class.student.get
 
     //schema file: 
-    `${schema_folder}/school.grade.class.student.get.js`
-    `${schema_folder}/school.grade.class.student.get/index.js`
+    ${schema_folder}/school.grade.class.student.get.js
+    ${schema_folder}/school.grade.class.student.get/index.js
 
     //handler file:
-    `${handler_folder}/school.grade.class.student.get.js`
-    `${handler_folder}/school.grade.class.student.get/index.js`
+    ${handler_folder}/school.grade.class.student.get.js
+    ${handler_folder}/school.grade.class.student.get/index.js
     ```
 
-6. Beside these there are two less important concepts: `middleware` & `router`:
-    - **middleware**: A component that pre-process the request with pattern-matched api name before validating the request and passing it to the handler. You can use `apiName`, `schema` and `payload` here. You can pass several middlewares in **a sorted array** to the framework to make it works. A common use case of middleware is user authorization.
+6. Beside these, there are two less important concepts: `middleware` & `router`:
+    - **middleware**: A component that pre-process the request for pattern-matched api before validating the request and passing it to the handler. You can use params `apiName`, `schema` and `payload` here. A common use case of middleware is user authorization. You can pass several middlewares in **a sorted array** to the framework to make it works.
     - **router**: A route function to redirect your request to another api, default to `apiName => apiName`. It can be use for versioning your client.
 
 # Usage
