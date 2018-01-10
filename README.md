@@ -4,7 +4,7 @@
 
 # Convention
 
-1. An `api` is... emmmm... well, you know, an api. It is described in this pattern: `model.sub_model.verb`, such as `school.grade.class.student.get`. It is just like a flated restful api. We consider this a more separate way to deal with different logic rather than a restful one. Also, more extensible.
+1. An `api` is... emmmm... well, you know, an api. It is described in this pattern: `model.sub_model.verb`, such as `school.grade.class.student.get`. It is just like a flated restful api. We consider this a more independent way to deal with different logic rather than a restful one. Also, more extensible.
 
 2. An api will be mapped to ONE `schema` and ONE `handler`. The schema is used to describe the api, and the handler is to handle and deal with the request.
 
