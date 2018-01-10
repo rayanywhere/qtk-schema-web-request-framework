@@ -4,7 +4,7 @@
 
 # Convention
 
-1. An `api` is... emmmm... well, you know, an api. It is described in this pattern: `model.sub_model.(version).verb`, such as `school.grade.class.student.get`. It is just like a flated restful api. We consider this a more separate way to deal with different logic rather than a restful one. And also, more extensible.
+1. An `api` is... emmmm... well, you know, an api. It is described in this pattern: `model.sub_model.verb`, such as `school.grade.class.student.get`. It is just like a flated restful api. We consider this a more separate way to deal with different logic rather than a restful one. And also, more extensible.
 
 2. An api will be mapped to ONE `schema` and ONE `handler`. The schema is used to describe the api, and the handler is to handle and deal with the request.
 
@@ -16,14 +16,16 @@
 4. A handler is a module that exports an **async** function, while arguments of the function is the request content, and the return of it will be treated as the response.
 
 5. Both the schema and the handler would be loaded from the file with the same name as the api from their own belonging folder. For example:
-    ```
-    api name: school.grade.class.student.get
+    ```js
+    //api name: school.grade.class.student.get
 
-    schema file: ${schema_folder}/school.grade.class.student.get.js
-              or ${schema_folder}/school.grade.class.student.get/index.js
+    //schema file: 
+    `${schema_folder}/school.grade.class.student.get.js`
+    `${schema_folder}/school.grade.class.student.get/index.js`
 
-    handler file: ${handler_folder}/school.grade.class.student.get.js
-               or ${handler_folder}/school.grade.class.student.get/index.js
+    //handler file:
+    `${handler_folder}/school.grade.class.student.get.js`
+    `${handler_folder}/school.grade.class.student.get/index.js`
     ```
 
 6. Beside these there are two less important concepts: `middleware` & `router`:
