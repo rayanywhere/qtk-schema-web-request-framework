@@ -8,7 +8,7 @@
     "author": "magnus&skip",
     "license": "",
     "dependencies": {
-        "ajv": "^5.5.1",
+        "ajv": "^5.5.2",
         "ajv-keywords": "^2.1.1",
         "body-parser": "^1.18.2",
         "content-type": "^1.0.4",
@@ -17,6 +17,6 @@
         "fs": "0.0.1-security",
         "iconv-lite": "^0.4.19",
         "request": "^2.83.0",
-        "semantic-schema": "^0.1.2"
+        "semantic-schema": "^0.1.8"
     }
 }
