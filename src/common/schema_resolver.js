@@ -39,6 +39,5 @@ module.exports = class {
         }
 
         return this._schemaCache[apiName];
-        
     }
 };
