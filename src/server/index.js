@@ -29,8 +29,6 @@ module.exports = class extends EventEmitter {
                 if(this._errorDetail) {
                     res.status(500).json({
                         code: webError.code,
-                        name: webError.name,
-                        message: webError.message,
                         stack: webError.stack
                     });
                 }
