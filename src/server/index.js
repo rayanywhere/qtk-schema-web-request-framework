@@ -3,6 +3,7 @@ const SchemaResolver = require('../common/schema_resolver');
 const JsonBodyParser = require('./json_body_parser');
 const StateParser = require('./state_parser');
 const EventEmitter = require('events').EventEmitter;
+const WebError = require('../error');
 
 module.exports = class extends EventEmitter {
 
@@ -10,19 +11,30 @@ module.exports = class extends EventEmitter {
         port, 
         handlerDir, 
         schemaDir, 
-        middlewares = [], 
+        middlewares = [],
+        errorDetail = false,
         route = i => i
     }) {
         super();
         this._host = host;
         this._port = port;
+        this._errorDetail = errorDetail;
         this._app = new Express();
         this._app.use(JsonBodyParser);
         this._app.post('/*', this._executor(handlerDir, schemaDir, middlewares, route));
         this._app.use((err, req, res, next) => {
             if(err) {
                 this.emit('error', err);
-                res.sendStatus(500);
+                let webError = WebError.fromError(err);
+                if(this._errorDetail) {
+                    res.status(500).json({
+                        code: webError.code,
+                        stack: webError.stack
+                    });
+                }
+                else {
+                    res.status(500).json({code: webError.code});
+                }
             }
         });
     }
