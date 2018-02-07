@@ -1,6 +1,6 @@
 {
     "name": "@qtk/schema-web-request-framework",
-    "version": "1.1.0",
+    "version": "1.1.1",
     "description": "schema-web-request-framework",
     "main": "build.js",
     "scripts": {},
@@ -17,6 +17,6 @@
         "fs": "0.0.1-security",
         "iconv-lite": "^0.4.19",
         "request": "^2.83.0",
-        "semantic-schema": "^0.1.8"
+        "semantic-schema": "^0.1.13"
     }
 }

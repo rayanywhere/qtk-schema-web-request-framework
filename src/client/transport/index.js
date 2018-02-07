@@ -1,5 +1,5 @@
 const Request = require("request");
-let sessionStorage = require('./lib/session_storage_emulator.js');
+const SessionStorage = require('./lib/session_storage_emulator.js');
 
 module.exports = class  Transport {
     constructor({protocol, host, port, path}) {
@@ -7,6 +7,7 @@ module.exports = class  Transport {
         this._host = host;
         this._port = port;
         this._path = path;
+        this._sessionStorage = new SessionStorage();
     }
 
     run(interfaceName, request, timeout) { 
@@ -14,7 +15,7 @@ module.exports = class  Transport {
     }
 
     putState(key, value) {
-        let states = sessionStorage.getItem('Web-State');
+        let states = this._sessionStorage.getItem('Web-State');
         if (typeof states !== 'string') {
             states = '';
         }
@@ -33,11 +34,11 @@ module.exports = class  Transport {
             states.push(`${key}=${value}`);
         }
 
-        sessionStorage.setItem(`Web-State`, states.join(';'));
+        this._sessionStorage.setItem(`Web-State`, states.join(';'));
     }
 
     removeState(key) {
-        let states = sessionStorage.getItem('Web-State');
+        let states = this._sessionStorage.getItem('Web-State');
         if (typeof states !== 'string') {
             states = '';
         }
@@ -56,16 +57,16 @@ module.exports = class  Transport {
             states.push(`${key}=${value}`);
         }
 
-        sessionStorage.setItem(`Web-State`, states.join(';'));
+        this._sessionStorage.setItem(`Web-State`, states.join(';'));
     }
 
     clearState() {
-        sessionStorage.removeItem(`Web-State`);
+        this._sessionStorage.removeItem(`Web-State`);
     }
 
     async _transport(name, request, timeout) {
         return await new Promise((resolve, reject) => {
-            let states = sessionStorage.getItem('Web-State');
+            let states = this._sessionStorage.getItem('Web-State');
             Request({
                 method: 'post',
                 url: `${this._protocol}://${this._host}:${this._port}${this._path}${name}`,
