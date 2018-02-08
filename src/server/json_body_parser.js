@@ -8,14 +8,18 @@ module.exports = (req, res, next) => {
     });
     req.on('end', () => {
         try {
-            let contentType = ContentType.parse(req.headers['content-type']);
-            let charset = contentType.parameters.charset ? contentType.parameters.charset : 'UTF-8';
+            let charset = 'UTF-8';
+            if(req.headers['content-type']) {
+                let contentType = ContentType.parse(req.headers['content-type']);
+                if(contentType.parameters.charset) charset = contentType.parameters.charset;
+            }
             let body = iconv.decode(Buffer.concat(chunks), charset);
-            req.body = JSON.parse(body);
+            try {req.body = JSON.parse(body)}
+            catch(err) {throw new Error(`invalid body: ${body}`)}
             next();
         }
         catch(err) {
-            next(err);
+            next(new Error(`invalid request: ${err.message}`));
         }
     });
 };

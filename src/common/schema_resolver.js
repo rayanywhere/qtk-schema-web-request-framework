@@ -7,10 +7,10 @@ class CustomValidator extends Validator{
     validate(instance) {
         let result = super.validate(instance);
         if(!result) {
-
             let instanceStr = JSON.stringify(instance);
             let schemaStr = JSON.stringify(this.jsonSchema);
-            let errorStr = this.errorsText();
+            console.log(this.errors());
+            let errorStr = this.errorsText(this.errors());
             throw new Error(`invalid ${this._module}\n instance: ${instanceStr}\n schema: ${schemaStr}\n error: ${errorStr}`);
         }
     }
@@ -23,8 +23,13 @@ module.exports = class {
     }
 
     resolve(apiName) {
+        if(!apiName) {
+            throw new Error('apiName must be provided.');
+        }
         if(!this._schemaCache[apiName]) {
-            const schema =  require(`${this._schemaDir}/${apiName}`);
+            let schema;
+            try {schema = require(`${this._schemaDir}/${apiName}`)}
+            catch(err) {throw new Error(`no such api: ${apiName}`)}
             if (schema.request === undefined 
                 || schema.response === undefined 
                 || (typeof schema.info !== 'object')) {
