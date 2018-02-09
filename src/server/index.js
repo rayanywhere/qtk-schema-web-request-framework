@@ -50,6 +50,7 @@ module.exports = class extends EventEmitter {
         return async (req, res, next) => {
             try {
                 let apiName = route(req.originalUrl.replace(/^\//, ''));
+                this.emit('request_start', apiName);
                 let apiSchema = schemaResolver.resolve(apiName);
                 let payload = {
                     state: StateParser(req),
@@ -73,6 +74,7 @@ module.exports = class extends EventEmitter {
                 if(outgoing === undefined) outgoing = null;
                 apiSchema.responseValidator.validate(outgoing);
                 res.json({response: outgoing});
+                this.emit('request_end', apiName);
             }
             catch(err) {
                 next(err);
